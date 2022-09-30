@@ -1,21 +1,25 @@
 fn main() {
-    let x =12;
-    let y =9;
-    let answer=find_answer(x,y);
-    println!("the answer is {}", answer)
+    let n = 42;
+    println!("Fib({})={}", n, fib(n));
 }
-fn find_answer(x:i32,y:i32)-> i32 {
-    x*y+5
-}
-#[cfg(test)]
-mod tests{
-    use super::*;
-    #[test]
-    fn test_find_answer(){
-        let x =7;
-        let y =5;
-        let answer = find_answer(x, y);
-        assert_eq!(40,answer)
+fn fib(n: u32) -> u32 {
+    if n == 0 {
+        0
+    } else if n == 1 {
+        1
+    } else {
+        let mut x = 2;
+        let mut a = 0;
+        let mut b = 1;
+        loop {
+            let next = a + b;
+            a = b;
+            b = next;
+            x += 1;
+            if x >= n {
+                break;
+            }
+        }
+        b
     }
-
 }
