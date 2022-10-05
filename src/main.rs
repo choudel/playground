@@ -1,25 +1,56 @@
-fn main() {
-    let n = 42;
-    println!("Fib({})={}", n, fib(n));
-}
-fn fib(n: u32) -> u32 {
-    if n == 0 {
-        0
-    } else if n == 1 {
-        1
-    } else {
-        let mut x = 2;
-        let mut a = 0;
-        let mut b = 1;
-        loop {
-            let next = a + b;
-            a = b;
-            b = next;
-            x += 1;
-            if x >= n {
-                break;
+use model::Hands;
+
+mod model {
+    pub struct Item {
+        what: String,
+        present: bool,
+    }
+    impl Item {
+        pub fn report_item(&self, which: &str) {
+            if self.present {
+                println!("{} hand is holding {}", which, self.what);
+            } else {
+                println!("{} hand is holding nothing", which);
             }
         }
-        b
     }
+    pub struct Hands {
+        left: Item,
+        right: Item,
+    }
+    impl Hands {
+        pub fn juggle(mut self) -> Self {
+            println!("let's juggle");
+            let air = self.left;
+            self.left = self.right;
+            self.right = air;
+            self
+        }
+        pub fn report(&self) {
+            Item::report_item(&self.left, "left");
+            Item::report_item(&self.right, "right");
+        }
+        pub fn new() -> Self {
+            Self {
+                left: Item {
+                    what: "an apple".to_owned(),
+                    present: true,
+                },
+                right: Item {
+                    what: "a banana".to_owned(),
+                    present: true,
+                },
+            }
+        }
+    }
+}
+
+fn main() {
+    let mut hands = Hands::new();
+
+    hands.report();
+
+    hands = hands.juggle();
+
+    hands.report();
 }
