@@ -1,22 +1,26 @@
 use model::Hands;
 
 mod model {
-    pub struct Item {
-        what: String,
-        present: bool,
+    pub trait Displayable{
+        fn display(&self)->String;
     }
-    impl Item {
-        pub fn report_item(&self, which: &str) {
-            if self.present {
-                println!("{} hand is holding {}", which, self.what);
-            } else {
-                println!("{} hand is holding nothing", which);
+    enum Fruit {
+        Apple,
+        Banana,
+        Kiwi,
+    }
+    impl Displayable for Fruit {
+        fn display(&self) -> String {
+            match self {
+                Fruit::Apple => "an apple".to_owned(),
+                Fruit::Banana => "a banana".to_owned(),
+                Fruit::Kiwi => "a kiwi".to_owned(),
             }
         }
     }
     pub struct Hands {
-        left: Item,
-        right: Item,
+        left: Option<Fruit>,
+        right: Option<Fruit>,
     }
     impl Hands {
         pub fn juggle(mut self) -> Self {
@@ -27,21 +31,28 @@ mod model {
             self
         }
         pub fn report(&self) {
-            Item::report_item(&self.left, "left");
-            Item::report_item(&self.right, "right");
+            report_item(&self.left, "left");
+            report_item(&self.right, "right");
         }
         pub fn new() -> Self {
             Self {
-                left: Item {
-                    what: "an apple".to_owned(),
-                    present: true,
-                },
-                right: Item {
-                    what: "a banana".to_owned(),
-                    present: true,
-                },
+                left: Some(Fruit::Apple),
+                right: Some(Fruit::Banana),
             }
         }
+    }
+   
+    
+        pub fn report_item<T:Displayable>(item:&Option<T>, which: &str) {
+            match item {
+                Some(what) => {
+                    println!("{} hand is holding {}", which, what.display())
+                }
+                _ => {
+                    println!("{} hand is holding nothing", which)
+                }
+            }
+    
     }
 }
 
