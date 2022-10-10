@@ -1,22 +1,20 @@
-fn double(n: i32) -> i32 {
-    n * 2
-}
-fn triple(n: i32) -> i32 {
-    n * 3
+use std::io::BufRead;
+
+#[derive(Debug)]
+enum Error {
+    Open(std::io::Error),
+    Read(std::io::Error),
 }
 
-fn make_multiplier(mut x: i32) -> impl FnMut(i32) -> i32 {
-    
-        move |n|{
-            x +=1;
-            n * x
-        }     
-}
-fn main() {
-    let nums = vec![1, 2, 3];
-    let nums_as_iter = nums.into_iter();
-    let multiplied = nums_as_iter.map(make_multiplier(2));
-    for l in multiplied {
-        println!("{}", l)
+fn read_file() -> Result<(), Error> {
+    let file = std::fs::File::open("out.txt").map_err( Error::Open)?;
+    let reader = std::io::BufReader::new(file);
+    for line in reader.lines() {
+        let line = line.map_err(Error::Read)?;
+        println!("{}", line);
     }
+    Ok(())
+}
+fn main() -> Result<(), Error> {
+    read_file()
 }
