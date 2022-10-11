@@ -11,7 +11,7 @@ impl ClassicCars{
   }
 }
 fn main() {
-    let car_collection = vec![("Thunder",1960),("CObra",1966),("GT",1967)];
+    let car_collection = vec![("Thunder",1960),("Cobra",1966),("GT",1967)];
     let ford_models = ClassicCars{
       make:"Ford",
       models:car_collection
