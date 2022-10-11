@@ -1,20 +1,23 @@
-use std::io::BufRead;
-
-#[derive(Debug)]
-enum Error {
-    Open(std::io::Error),
-    Read(std::io::Error),
+struct ClassicCars{
+  make:&'static str,
+  models:Vec<(&'static str,i32)>
 }
-
-fn read_file() -> Result<(), Error> {
-    let file = std::fs::File::open("out.txt").map_err( Error::Open)?;
-    let reader = std::io::BufReader::new(file);
-    for line in reader.lines() {
-        let line = line.map_err(Error::Read)?;
-        println!("{}", line);
-    }
-    Ok(())
+impl ClassicCars{
+  fn smart_get<F>(&self,f:F)
+  where 
+  F:Fn(&Vec<(&'static str,i32)>)
+  {
+    f(&self.models)
+  }
 }
-fn main() -> Result<(), Error> {
-    read_file()
+fn main() {
+    let car_collection = vec![("Thunder",1960),("CObra",1966),("GT",1967)];
+    let ford_models = ClassicCars{
+      make:"Ford",
+      models:car_collection
+    };
+    ford_models.smart_get(|x|{
+      let res:Vec<&(&str, i32)> = x.into_iter().filter(|x|x.1>1960).collect();
+      println!("{:?}",res);
+    })
 }
