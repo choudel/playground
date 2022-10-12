@@ -1,23 +1,40 @@
-struct ClassicCars{
-  make:&'static str,
-  models:Vec<(&'static str,i32)>
+struct Node {
+    value: i32,
+    left: Option<Box<Node>>,
+    right: Option<Box<Node>>,
 }
-impl ClassicCars{
-  fn smart_get<F>(&self,f:F)
-  where 
-  F:Fn(&Vec<(&'static str,i32)>)
-  {
-    f(&self.models)
-  }
+impl Node {
+    fn display(&self) {
+        println!("Value:\n_ \n_*|{}", self.value);
+        if let Some(left) = &self.left {
+            println!("LEFT");
+            left.display();
+        }
+
+        if let Some(right) = &self.right {
+            println!("RIGHT");
+            right.display();
+        }
+        println!("--------UP--------")
+    }
 }
 fn main() {
-    let car_collection = vec![("Thunder",1960),("Cobra",1966),("GT",1967)];
-    let ford_models = ClassicCars{
-      make:"Ford",
-      models:car_collection
+    let mut root = Node {
+        value: 2,
+        left: Some(Box::new(Node {
+            value: 7,
+            left: Some(Box::new(Node {
+                value: 7,
+                left: None,
+                right: None,
+            })),
+            right: None,
+        })),
+        right: Some(Box::new(Node {
+            value: 4,
+            left: None,
+            right: None,
+        })),
     };
-    ford_models.smart_get(|x|{
-      let res:Vec<&(&str, i32)> = x.into_iter().filter(|x|x.1>1960).collect();
-      println!("{:?}",res);
-    })
+    root.display();
 }
