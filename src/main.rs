@@ -1,40 +1,41 @@
+use std::{rc::Rc, vec};
+
 struct Node {
-    value: i32,
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
+    value: &'static str,
+    edges:Vec<Rc<Node>>
 }
 impl Node {
     fn display(&self) {
         println!("Value:\n_ \n_*|{}", self.value);
-        if let Some(left) = &self.left {
-            println!("LEFT");
-            left.display();
-        }
-
-        if let Some(right) = &self.right {
-            println!("RIGHT");
-            right.display();
+        for edge in &self.edges{
+          edge.display();
         }
         println!("--------UP--------")
     }
 }
 fn main() {
-    let mut root = Node {
-        value: 2,
-        left: Some(Box::new(Node {
-            value: 7,
-            left: Some(Box::new(Node {
-                value: 7,
-                left: None,
-                right: None,
-            })),
-            right: None,
-        })),
-        right: Some(Box::new(Node {
-            value: 4,
-            left: None,
-            right: None,
-        })),
+    let e = Rc::new(Node{
+      value:"e",
+      edges: vec![]
+    });
+    let d = Rc::new(Node{
+      value:"d",
+      edges: vec![e.clone()]
+    }) ;
+    let a =Node{
+      value:"a",
+      edges:vec![
+        Rc::new(Node{
+          value:"b",
+          edges:vec![d.clone()],
+        }),
+        Rc::new(Node{
+          value:"c",
+          edges:vec![d.clone(),e.clone()],
+        }),
+        d,
+        e
+      ]
     };
-    root.display();
+    a.display();
 }
