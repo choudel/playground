@@ -1,27 +1,50 @@
-use std::time::Duration;
-use tokio::time::sleep;
-#[tokio::main]
-async fn main() {
-    let mut handles = vec![];
-    for i in 0..2 {
-        let handle = tokio::spawn(async move {
-            my_function(i).await;
-        });
-        handles.push(handle);
-    }
-    for handle in handles {
-      handle.await.unwrap();
-    }
-    
+enum Color {
+    Brown,
+    Red,
 }
-async fn my_function(i:i32) {
-    println!("[{i}] I'm an async function!");
-    let s1 = read_from_database().await;
-    println!("[{i}] First result : {s1}");
-    let s2 = read_from_database().await;
-    println!("[{i}] Second result: {s2}");
+impl Color {
+    fn print_cl(&self) {
+        match self {
+            Color::Brown => println!("brown"),
+            Color::Red => println!("red"),
+        }
+    }
 }
-async fn read_from_database() -> String {
-    sleep(Duration::from_millis(50)).await;
-    "DB Result".to_owned()
+struct Dimensions {
+    width: f64,
+    height: f64,
+    depth: f64,
+}
+impl Dimensions {
+    fn print_d(&self) {
+        println!("width: {:?}", self.width);
+    }
+}
+struct Box {
+    dimensions: Dimensions,
+    weight: i32,
+    color: Color,
+}
+impl Box {
+    fn create_new(dimensions: Dimensions, weight: i32, color: Color) -> Self {
+        Self {
+            dimensions,
+            weight,
+            color,
+        }
+    }
+    fn print_b(&self) {
+        self.color.print_cl();
+        self.dimensions.print_d();
+        println!("weight: {:?}", self.weight);
+    }
+}
+fn main() {
+    let small_dimensions = Dimensions {
+        width: 1.0,
+        height: 2.0,
+        depth: 3.0,
+    };
+    let small_box = Box::create_new(small_dimensions, 5, Color::Red);
+    small_box.print_b();
 }
