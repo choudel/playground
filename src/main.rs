@@ -1,50 +1,20 @@
-enum Color {
-    Brown,
-    Red,
+enum Ticket {
+    Vip(f64, String),
+    Backstage(f64, String),
+    Standard(f64),
 }
-impl Color {
-    fn print_cl(&self) {
-        match self {
-            Color::Brown => println!("brown"),
-            Color::Red => println!("red"),
-        }
-    }
-}
-struct Dimensions {
-    width: f64,
-    height: f64,
-    depth: f64,
-}
-impl Dimensions {
-    fn print_d(&self) {
-        println!("width: {:?}", self.width);
-    }
-}
-struct Box {
-    dimensions: Dimensions,
-    weight: i32,
-    color: Color,
-}
-impl Box {
-    fn create_new(dimensions: Dimensions, weight: i32, color: Color) -> Self {
-        Self {
-            dimensions,
-            weight,
-            color,
-        }
-    }
-    fn print_b(&self) {
-        self.color.print_cl();
-        self.dimensions.print_d();
-        println!("weight: {:?}", self.weight);
-    }
-}
+
 fn main() {
-    let small_dimensions = Dimensions {
-        width: 1.0,
-        height: 2.0,
-        depth: 3.0,
-    };
-    let small_box = Box::create_new(small_dimensions, 5, Color::Red);
-    small_box.print_b();
+    let tickets = vec![
+        Ticket::Vip(260.36, "billy".to_owned()),
+        Ticket::Backstage(368.65, "matilda".to_owned()),
+        Ticket::Standard(153.26),
+    ];
+    for ticket in tickets {
+        match ticket {
+            Ticket::Vip(price, holder) => println!("Vip Holder : {holder:?}, price: {price:?}"),
+            Ticket::Standard(price) => println!("Standard ticket:{price:?}"),
+            Ticket::Backstage(price, holder) => println!("BS Holder:{holder:?},price:{price:?}"),
+        }
+    }
 }
