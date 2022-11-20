@@ -1,49 +1,26 @@
-use std::collections::HashMap;
 #[derive(Debug)]
-struct Item {
+struct User {
+    user_id: i32,
     name: String,
-    in_stock: i32,
 }
-
-fn main() {
-    let mut store = HashMap::new();
-    store.insert(
-        1,
-        Item {
-            name: "Chairs".to_string(),
-            in_stock: 5,
-        },
-    );
-    store.insert(
-        2,
-        Item {
-            name: "Beds".to_string(),
-            in_stock: 3,
-        },
-    );
-    store.insert(
-        3,
-        Item {
-            name: "Tables".to_string(),
-            in_stock: 2,
-        },
-    );
-    store.insert(
-        4,
-        Item {
-            name: "Couches".to_string(),
-            in_stock: 0,
-        },
-    );
-    let mut total=0;
-    for (k, item) in store.iter() {
-        if item.in_stock == 0 {
-            println!("Out of stock")
-        } else {
-            println!("{:?}",item)
-        }
-        total = total+item.in_stock;
+fn find_user(name: &str) -> Option<i32> {
+    let name = name.to_lowercase();
+    match name.as_str() {
+        "sam" => Some(1),
+        "matt" => Some(5),
+        "katie" => Some(9),
+        _ => None,
     }
-    println!("{total}");
-
+}
+fn main() {
+    let username = "patt";
+    let user = find_user(username).map(|user_id| User {
+        user_id,
+        name: username.to_owned(),
+    });
+    println!("{user:?}");
+    match user {
+        Some(user) => println!("{user:?}"),
+        None => println!("user not found"),
+    }
 }
