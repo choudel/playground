@@ -1,20 +1,43 @@
-enum Ticket {
-    Vip(f64, String),
-    Backstage(f64, String),
-    Standard(f64),
+enum Titles {
+    Maintenance,
+    Marketing,
+    Managers,
+    Supervisor,
+    Cook,
+    Technician,
+}
+enum Status {
+    Active,
+    Terminated,
+}
+struct Employee {
+    title: Titles,
+    status: Status,
+}
+fn access(val: Employee) -> Result<(), String> {
+    match val.status {
+        Status::Terminated => Err("Denied access".to_string()),
+        Status::Active => match val.title {
+            Titles::Maintenance | Titles::Marketing | Titles::Managers => Ok(()),
+            Titles::Supervisor | Titles::Cook | Titles::Technician => {
+                Err("Denied access".to_string())
+            }
+        },
+    }
+}
+fn print_result(val: Employee) -> Result<(), String> {
+    let attempt_access = access(val)?;
+    println!("Access granted {attempt_access:?}");
+    Ok(())
 }
 
 fn main() {
-    let tickets = vec![
-        Ticket::Vip(260.36, "billy".to_owned()),
-        Ticket::Backstage(368.65, "matilda".to_owned()),
-        Ticket::Standard(153.26),
-    ];
-    for ticket in tickets {
-        match ticket {
-            Ticket::Vip(price, holder) => println!("Vip Holder : {holder:?}, price: {price:?}"),
-            Ticket::Standard(price) => println!("Standard ticket:{price:?}"),
-            Ticket::Backstage(price, holder) => println!("BS Holder:{holder:?},price:{price:?}"),
-        }
+    let mike = Employee {
+        title: Titles::Cook,
+        status: Status::Active,
+    };
+    match print_result(mike) {
+        Err(e)=>println!("access denied : {e:?}"),
+        _=>()
     }
 }
