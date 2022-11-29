@@ -1,45 +1,62 @@
-trait Material {
-    fn cost_per_sq_meter(&self)->f64;
-    fn square_meters(&self)->f64;
-    fn total_cost(&self)->f64{
-        self.cost_per_sq_meter()*self.square_meters()
+#[derive(Debug)]
+struct Cards {
+    inner: Vec<IdCard>,
+}
+#[derive(Debug, PartialEq, Eq,PartialOrd, Ord)]
+enum City {
+    Barland,
+    Bazopolis,
+    Fooville,
+}
+#[derive(Debug)]
+struct IdCard {
+    name: String,
+    age: u8,
+    city: City,
+}
+impl IdCard {
+    pub fn new(name: &str, age: u8, city: City) -> Self {
+        Self {
+            name: name.to_string(),
+            age,
+            city,
+        }
     }
 }
-struct Carpet(f64);
-impl Material for Carpet{
-    fn cost_per_sq_meter(&self)->f64 {
-        10.0
-    }
-    fn square_meters(&self)->f64 {
-        self.0
-    }
+fn new_ids() -> Cards {
+    Cards { inner: vec![
+        IdCard::new("Amy",1,City::Fooville),
+        IdCard::new("Matt",5,City::Barland),
+        IdCard::new("Bailee",54,City::Bazopolis),
+        IdCard::new("Anthoine",30,City::Bazopolis),
+    ] }
 }
-struct Tile(f64);
-impl Material for Tile {
-    fn cost_per_sq_meter(&self)->f64 {
-        20.0
-    }
-    fn square_meters(&self)->f64 {
-        self.0
-    }
+#[derive(Debug)]
+struct YoungPeople<'a>{
+inner:Vec<&'a IdCard>
 }
-struct Wood(f64);
-impl Material for Wood{
-    fn cost_per_sq_meter(&self)->f64 {
-        35.2
+impl <'a> YoungPeople<'a> {
+    fn living_in_fooville(&self)->Self{
+        Self { inner: self
+        .inner.iter()
+        .filter(|id| id.city == City::Fooville)
+        .map(|id|*id)
+        .collect()
+        }
     }
-    fn square_meters(&self)->f64 {
-        self.0
-    }
-}
-fn total_cost(material:&Vec<Box<dyn Material>>)->f64{
-    material.iter().map(|mat|mat.total_cost()).sum()
 }
 fn main() {
-    let carpet =Box::new(Carpet(188.9));
-    let tile =Box::new(Tile(100.0));
-    let wood =Box::new(Wood(140.3));
-    let materials:Vec<Box<dyn Material>> = vec![carpet,tile,wood];
-    let total = total_cost(&materials);
-    println!("{total}$");
+    let ids = new_ids();
+    let young = YoungPeople{
+        inner: ids.inner.iter().filter(|id| id.age <= 20).collect(),
+    };
+    for id in ids.inner.iter(){
+        println!("{id:?}**")
+    }
+    for id in young.inner.iter(){
+        println!("{id:?}--")
+    }
+    for id in young.living_in_fooville().inner.iter(){
+        println!("{id:?}11")
+    }
 }
