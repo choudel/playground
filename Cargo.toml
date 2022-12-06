@@ -10,7 +10,5 @@ chrono ="0.4.22"
 tokio = { version = "1.21.2", features = ["full"] }
 humantime = "2.1.0"
 thiserror= "1.0.3"
-
-[lib]
-name="demo"
-path="src/lib/mod.rs"
+[dev-dependencies]
+anyhow = "1.0.66"
