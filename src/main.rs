@@ -7,69 +7,57 @@ mod prelude;
 mod utils;
 
 #[derive(Debug)]
-pub struct Request {
-    pub url: String,
-    pub method: String,
-    pub headers: Vec<(String, String)>,
-    pub body: Option<String>,
+struct Task {
+    name:String,
+    url:String,
+    headers:Vec<(String,String)>
 }
-
-#[derive(Default)]
-pub struct RequestBuilder {
-    pub url: Option<String>,
-    pub method: Option<String>,
-    pub headers: Vec<(String, String)>,
-    pub body: Option<String>,
+#[derive(Default,Clone)]
+struct BuilderTask{
+    name:Option<String>,
+    url:Option<String>,
+    headers:Vec<(String,String)>
 }
-impl RequestBuilder {
-    pub fn new() -> Self {
-        RequestBuilder::default()
+impl BuilderTask {
+    fn new()-> Self{
+        BuilderTask::default()
     }
-    pub fn url(&mut self, url: impl Into<String>) -> &mut Self {
-        self.url = Some(url.into());
+    fn name(mut self, name:impl Into<String>)-> Self{
+        self.name.insert(name.into());
         self
     }
-    pub fn method(&mut self, method: impl Into<String>) -> &mut Self {
-        self.method = Some(method.into());
+    fn url(mut self,url:impl Into<String>)-> Self{
+        self.url.insert(url.into());
         self
     }
-    pub fn body(&mut self, body: impl Into<String>) -> &mut Self {
-        self.body = Some(body.into());
+    fn headers(mut self,a:impl Into<String>,b:impl Into<String>)->Self{
+        self.headers.push((a.into(),b.into()));
         self
     }
-    pub fn headers(&mut self, name: impl Into<String>, value: impl Into<String>) -> &mut Self {
-        self.headers.push((name.into(), value.into()));
-        self
-    }
-    pub fn build(&self) -> Result<Request> {
-        if let Some(url) = self.url.as_ref(){
-            let method = self
-            .method
-            .as_ref()
-            .cloned()
-            .unwrap_or_else(|| "GET".to_string());
-        Ok(Request {
-            url: url.to_string(),
-            method,
-            headers: self.headers.clone(),
-            body: self.body.clone(),
+    fn builder(self)->Result<Task>{
+        let Some(url)= self.url else {
+                return Err(Error::Generic("No url".to_string()));
+        };
+        Ok(Task{
+            name:self.name.unwrap_or_else(||"homer".to_string()),
+            url,
+            headers:self.headers,
         })
-        }else{
-            Err(Error::Generic("no".to_string()))
-        }
-       
     }
 }
 fn main() -> Result<()> {
     for entry in read_dir("./")?.filter_map(|e| e.ok()) {
         let entry: String = W(&entry).try_into()?;
         println!("{entry:?}")
-    }
-    let req = RequestBuilder::new()
-        .url("https://some-url.com/task/123")
-        .method("GET")
-        .headers("token", "user_uuid.exp.sign")
-        .build()?;
-    println!("{req:#?}");
+    };
+    let tasky = BuilderTask::new()
+    .name("howdy")
+    .url("holla.com")
+    .headers("pol","cop");
+    let req = tasky.clone().builder()?;
+    println!("{:?}",req);
+    let req = tasky.headers("Rojo","Poko").builder()?;
+    println!("{:?}",req);
     Ok(())
+    
 }
