@@ -1,51 +1,37 @@
 #![allow(unused)]
 
 use crate::prelude::*;
-use std::{fmt, fs::read_dir};
+use std::{fmt, fs::File};
 mod error;
 mod prelude;
 mod utils;
+use std::io::ErrorKind;
+use std::thread::{self, JoinHandle};
 
-struct Sedan;
-struct SUV;
-struct Hovercraft;
-trait LandCapable {
-    fn drive(&self) {
-        println!("Default drive")
-    }
+fn msg_hello()->&'static str{
+    use std::time::Duration; 
+    std::thread::sleep(Duration::from_millis(1000));
+    "Hello, "
 }
-trait WaterCapable {
-    fn sail(&self) {
-        println!("Default sail")
-    }
+fn msg_thread()-> &'static str{
+    use std::time::Duration;
+    std::thread::sleep(Duration::from_millis(1000));
+    "threads"
 }
-trait Amphibius: LandCapable + WaterCapable {}
-impl LandCapable for Sedan {}
-impl LandCapable for SUV {}
-impl Amphibius for Hovercraft {}
-impl WaterCapable for Hovercraft {
-    fn sail(&self) {
-        println!("Hovercraft Sailing")
-    }
-}
-impl LandCapable for Hovercraft {
-    fn drive(&self) {
-        println!("Hovercraft driving")
-    }
-}
-
-fn road_trip(vehicle: &impl LandCapable) {
-    vehicle.drive()
-}
-fn traverse_frozen_lake(vehicle: &impl Amphibius) {
-    vehicle.drive();
-    vehicle.sail()
+fn msg_excited()-> &'static str {
+    use std::time::Duration;
+    std::thread::sleep(Duration::from_millis(1000));
+    "!"
 }
 fn main() {
-    let hc = Hovercraft;
-    traverse_frozen_lake(&hc);
-    let car = Sedan;
-    road_trip(&car);
-    let suv = SUV;
-    road_trip(&suv)
+  use std::thread;
+  let msg_one = thread::spawn(move || msg_hello());
+  let msg_two = thread::spawn(move || msg_thread());
+  let msg_three = thread::spawn(move || msg_excited());
+
+  let msg_one= msg_one.join().expect("failed to join msg one");
+  let msg_two= msg_two.join().expect("failed to join msg two");
+  let msg_three= msg_three.join().expect("failed to join msg three");
+
+  println!("{}{}{}", msg_one, msg_two, msg_three);
 }
