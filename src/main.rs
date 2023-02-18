@@ -5,33 +5,36 @@ use std::{fmt, fs::File};
 mod error;
 mod prelude;
 mod utils;
+use crossbeam_channel::{unbounded, RecvError};
 use std::io::ErrorKind;
 use std::thread::{self, JoinHandle};
 
-fn msg_hello()->&'static str{
-    use std::time::Duration; 
-    std::thread::sleep(Duration::from_millis(1000));
-    "Hello, "
-}
-fn msg_thread()-> &'static str{
-    use std::time::Duration;
-    std::thread::sleep(Duration::from_millis(1000));
-    "threads"
-}
-fn msg_excited()-> &'static str {
-    use std::time::Duration;
-    std::thread::sleep(Duration::from_millis(1000));
-    "!"
-}
 fn main() {
-  use std::thread;
-  let msg_one = thread::spawn(move || msg_hello());
-  let msg_two = thread::spawn(move || msg_thread());
-  let msg_three = thread::spawn(move || msg_excited());
+    let (s, r) = unbounded();
 
-  let msg_one= msg_one.join().expect("failed to join msg one");
-  let msg_two= msg_two.join().expect("failed to join msg two");
-  let msg_three= msg_three.join().expect("failed to join msg three");
-
-  println!("{}{}{}", msg_one, msg_two, msg_three);
+    enum ThreadMsg {
+        PrintData(String),
+        Sum(i64, i64),
+        Quit,
+    }
+    let handle = thread::spawn(move || loop {
+        match r.recv() {
+            Ok(msg) => match msg {
+                ThreadMsg::PrintData(d) => println!("{}", d),
+                ThreadMsg::Sum(lhs, rhs) => println!("{}+{}={}", lhs, rhs, (lhs + rhs)),
+                ThreadMsg::Quit => {
+                    println!("thread terminated");
+                    break;
+                }
+            },
+            Err(e) => {
+                println!("disconnected");
+                break;
+            }
+        }
+    });
+    s.send(ThreadMsg::PrintData("Hello from main".to_owned()));
+    s.send(ThreadMsg::Sum(10, 10));
+    s.send(ThreadMsg::Quit);
+    handle.join();
 }
