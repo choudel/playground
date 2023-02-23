@@ -8,33 +8,49 @@ mod utils;
 use crossbeam_channel::{unbounded, RecvError};
 use std::io::ErrorKind;
 use std::thread::{self, JoinHandle};
-
+enum WorkerMsg {
+    PrintData(String),
+    Sum(i64, i64),
+    Quit,
+}
+enum MainMsg {
+    SumResult(i64),
+    WorkerQuit,
+}
 fn main() {
-    let (s, r) = unbounded();
+    let (worker_tx, worker_rx) = unbounded();
+    let (main_tx, main_rx) = unbounded();
 
-    enum ThreadMsg {
-        PrintData(String),
-        Sum(i64, i64),
-        Quit,
-    }
-    let handle = thread::spawn(move || loop {
-        match r.recv() {
+    let worker = thread::spawn(move || loop {
+        match worker_rx.recv() {
             Ok(msg) => match msg {
-                ThreadMsg::PrintData(d) => println!("{}", d),
-                ThreadMsg::Sum(lhs, rhs) => println!("{}+{}={}", lhs, rhs, (lhs + rhs)),
-                ThreadMsg::Quit => {
-                    println!("thread terminated");
+                WorkerMsg::PrintData(d) => println!("Worker:{}", d),
+                WorkerMsg::Sum(lhs, rhs) => {
+                    println!("Worker: summing...");
+                    main_tx.send(MainMsg::SumResult(lhs + rhs));
+                    ()
+                }
+                WorkerMsg::Quit => {
+                    println!("Worker: terminating...");
+                    main_tx.send(MainMsg::WorkerQuit);
                     break;
                 }
             },
             Err(e) => {
-                println!("disconnected");
+                println!("worker:disconnected");
+                main_tx.try_send(MainMsg::WorkerQuit);
                 break;
             }
         }
     });
-    s.send(ThreadMsg::PrintData("Hello from main".to_owned()));
-    s.send(ThreadMsg::Sum(10, 10));
-    s.send(ThreadMsg::Quit);
-    handle.join();
+    worker_tx.send(WorkerMsg::PrintData("Hello from main".to_owned()));
+    worker_tx.send(WorkerMsg::Sum(10, 10));
+    worker_tx.send(WorkerMsg::Quit);
+    while let Ok(msg) = main_rx.recv() {
+        match msg {
+            MainMsg::SumResult(answer) => println!("Main: answer={}", answer),
+            MainMsg::WorkerQuit => println!("Main:worker terminated"),
+        }
+    }
+    worker.join();
 }
