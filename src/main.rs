@@ -5,52 +5,67 @@ use std::{fmt, fs::File};
 mod error;
 mod prelude;
 mod utils;
-use crossbeam_channel::{unbounded, RecvError};
+use colored::Colorize;
+use crossbeam_channel::{unbounded, Receiver};
 use std::io::ErrorKind;
 use std::thread::{self, JoinHandle};
-enum WorkerMsg {
-    PrintData(String),
-    Sum(i64, i64),
-    Quit,
-}
-enum MainMsg {
-    SumResult(i64),
-    WorkerQuit,
-}
-fn main() {
-    let (worker_tx, worker_rx) = unbounded();
-    let (main_tx, main_rx) = unbounded();
 
-    let worker = thread::spawn(move || loop {
-        match worker_rx.recv() {
-            Ok(msg) => match msg {
-                WorkerMsg::PrintData(d) => println!("Worker:{}", d),
-                WorkerMsg::Sum(lhs, rhs) => {
-                    println!("Worker: summing...");
-                    main_tx.send(MainMsg::SumResult(lhs + rhs));
-                    ()
+enum LightMsg {
+    ChangeColor(u8, u8, u8),
+    Disconnect,
+    Off,
+    On,
+}
+enum LightStatus {
+    Off,
+    On,
+}
+fn spawn_light_thread(receiver: Receiver<LightMsg>) -> JoinHandle<LightStatus> {
+    thread::spawn(move || {
+        let mut light_status = LightStatus::Off;
+        loop {
+            if let Ok(msg) = receiver.recv() {
+                match msg {
+                    LightMsg::ChangeColor(r, g, b) => {
+                        println!("Color changed to : {}", "     ".on_truecolor(r, g, b));
+                        match light_status {
+                            LightStatus::Off => println!("Light is OFF"),
+                            LightStatus::On => println!("Light is ON"),
+                        }
+                    }
+                    LightMsg::On => {
+                        println!("Turned light on");
+                        light_status = LightStatus::On;
+                    }
+                    LightMsg::Off => {
+                        println!("Turned light off");
+                        light_status = LightStatus::Off;
+                    }
+                    LightMsg::Disconnect => {
+                        println!("disconnecting");
+                        light_status = LightStatus::Off;
+                        break;
+                    }
                 }
-                WorkerMsg::Quit => {
-                    println!("Worker: terminating...");
-                    main_tx.send(MainMsg::WorkerQuit);
-                    break;
-                }
-            },
-            Err(e) => {
-                println!("worker:disconnected");
-                main_tx.try_send(MainMsg::WorkerQuit);
+            } else {
+                println!("channel disconnected");
+                light_status = LightStatus::Off;
                 break;
             }
         }
-    });
-    worker_tx.send(WorkerMsg::PrintData("Hello from main".to_owned()));
-    worker_tx.send(WorkerMsg::Sum(10, 10));
-    worker_tx.send(WorkerMsg::Quit);
-    while let Ok(msg) = main_rx.recv() {
-        match msg {
-            MainMsg::SumResult(answer) => println!("Main: answer={}", answer),
-            MainMsg::WorkerQuit => println!("Main:worker terminated"),
-        }
-    }
-    worker.join();
+        light_status
+    })
+}
+fn main() {
+    let (s, r) = unbounded();
+    let light = spawn_light_thread(r);
+    s.send(LightMsg::On);
+    s.send(LightMsg::ChangeColor(255, 0, 0));
+    s.send(LightMsg::ChangeColor(25, 10, 20));
+    s.send(LightMsg::ChangeColor(180, 2, 4));
+    s.send(LightMsg::ChangeColor(211, 16, 0));
+    s.send(LightMsg::Off);
+    s.send(LightMsg::Disconnect);
+
+    let light_status = light.join();
 }
